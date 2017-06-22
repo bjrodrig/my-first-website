@@ -1,0 +1,9 @@
+
+{% if user.is_anonymous %}
+	<a href="{% url 'polls:login' %}">Login</a> <br>
+	<a href="{% url 'polls:signup' %}">Sign Up</a>
+{% else %}
+	<a href="{% url 'polls:logout' %}">logout</a>
+	<h1>Hi {{ user }} </h1>
+	
+{% endif %}

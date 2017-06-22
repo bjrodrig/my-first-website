@@ -1,0 +1,74 @@
+{% extends "polls/base.html" %}
+
+{% block content %}
+<br><br><br>
+<table style="border-collapse: separate; border-spacing: 8px;">
+<th>Food Item</th>
+<th>Serving Size</th>
+<th>Calories</th>
+
+{% for food in all_foods %}
+	{% if food.food != "Quick Add" %}
+		<tr>
+		<td>{{ food.food }}</td>
+		<td>{{ food.serving_size }} {{ food.units }}{{ food.units|pluralize }}</td>
+		<td>{{ food.calories }} calorie{{ food.calories|pluralize }}</td>
+		<td><a href="{% url 'polls:search_food' food.food today %}">Select</a></td>
+		</tr>
+	{% endif %}
+{% endfor %}
+</table>
+<br><br>
+{% if selected %}
+	<b> {{ selected.food }} </b>
+	<form method="post">
+	{% csrf_token %}
+	{{ form.servings }}
+	<select label = "servings of" name="serve_size">
+		<option value="{{ selected.serving_size }} {{ selected.units }}">
+		{{ selected.serving_size }} {{ selected.units }}{{ selected.units|pluralize }}</option>
+		{% if database_units in weight %}
+			{% if database_units != 'gram' and database_units != 'gm' or selected.serving_size != 1 %}
+				<option value="1 gram">1 gram</option>
+			{% endif %}
+			{% if database_units != 'oz' and database_units != 'ounce' or selected.serving_size != 1 %}
+				<option value="1 ounce">1 oz</option>
+			{% endif %}
+		{% elif database_units in volume %}
+			{% for unit in simple_volume %}
+				{% if selected.serving_size != 1 or database_units != unit %}
+					<option value="1 {{ unit }}">1 {{ unit }}</option>
+				{% endif %}
+			{% endfor %}
+			
+		{% endif %}
+	</select>
+	<br>
+	{{ form.meals.label_tag }} {{ form.meals }}
+	<input type="hidden" value={{ selected.food }} name="food">
+	<input type="hidden" value={{ today }} name="today">
+	<input type="submit" value="Add">
+	
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+	</form>		
+{% endif %}
+
+<br><br>
+<p>Can't find what you're looking for?</p>
+<a href="{% url 'polls:add_food_to_database' %}">Add a food to the database</a>
+
+
+{% endblock %}

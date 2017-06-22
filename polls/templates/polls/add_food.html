@@ -1,0 +1,149 @@
+{% extends "polls/base.html" %}
+{% load poll_extras %}
+
+{% block content %}
+<!-- <div class="container"> -->
+<p><b>Search our food database by name</b></p>
+
+<form method="post" action="{% url 'polls:search_food' 'none' today %}" >
+{% csrf_token %}
+{{ search_form }}
+<input type="submit" name="search">
+</form>
+<br><br><br>
+<p><b>Or, add your favorites</b></p>
+
+
+
+
+<form method = "post">
+	<input type="submit" value="Add"/> <br>
+	{% csrf_token %}
+	{{ mult_form }}
+	
+	{{ meal_formset.management_form }}
+	<ul class="nav nav-tabs">
+		<li class="active"><a data-toggle="tab" href="#recent">Recent</a></li>
+		<li><a data-toggle="tab" href="#frequent">Frequent</a></li>
+		<li><a data-toggle="tab" href="#meals">Meals</a></li>
+	</ul>
+	<div class="tab-content">
+	
+	{% for meal_form in meal_formset %}
+		{% if forloop.counter <=  count_recent  %}
+			<div id="recent" class="tab-pane fade in active">
+				
+				<table style="border-collapse: separate; border-spacing: 10px; background-color: #e0ffff">
+				<tr>
+				<td>{{ meal_form.food_selected }}</td>
+				{% if forloop.counter0 < 10 %}
+				<td width="250px">	{{ add_food_names|at_index:forloop.counter0 }} </td>
+				{% endif %}
+				<td width="100px"><b>Qty: </b>{{ meal_form.food_quant }}</td>
+				<td width="120px">{{ meal_form.serve_size }}
+				{{ meal_form.formset_index }}
+				{{ meal_form.today }}
+				{{ meal_form.meal }}
+				<input type="hidden" name="today" value={{ today }}>
+				</tr>
+				
+				{% if meal_form.errors %}
+					{% for field in meal_form %}
+					{% for error in field.errors %}
+					<div class="alert alert-danger">
+					<strong>{{ error|escape }}</strong>
+					</div>
+					{% endfor %}
+					{% endfor %}
+				{% for error in meal_form.non_field_errors %}
+					<div class="alert alert-danger">
+					<strong>{{ error|escape }}</strong>
+					</div>
+				{% endfor %}
+				{% endif %}
+				
+		{% endif %}	
+	{% endfor %}
+			</table>
+			</div>
+	{% for meal_form in meal_formset %}
+		{% if forloop.counter > count_recent and forloop.counter <= count_frequent %}
+			<div id="frequent" class="tab-pane fade">
+				<table style="border-collapse: separate; border-spacing: 10px; background-color: #e0ffff">
+				<tr>
+				<td>{{ meal_form.food_selected }}</td>
+				{% if forloop.counter0 < count_frequent %}
+				<td width="250px">	{{ add_food_names|at_index:forloop.counter0 }} </td>
+				{% endif %}
+				<td width="100px"><b>Qty: </b>{{ meal_form.food_quant }}</td>
+				<td width="120px">{{ meal_form.serve_size }}
+				{{ meal_form.formset_index }}
+				{{ meal_form.today }}
+				{{ meal_form.meal }}
+				<input type="hidden" name="today" value={{ today }}>
+				</tr>
+				
+				{% if meal_form.errors %}
+					{% for field in meal_form %}
+					{% for error in field.errors %}
+					<div class="alert alert-danger">
+					<strong>{{ error|escape }}</strong>
+					</div>
+					{% endfor %}
+					{% endfor %}
+				{% for error in meal_form.non_field_errors %}
+					<div class="alert alert-danger">
+					<strong>{{ error|escape }}</strong>
+					</div>
+				{% endfor %}
+				{% endif %}
+				
+		{% endif %}	
+	{% endfor %}
+			</table>	
+			</div>
+	{% for meal_form in meal_formset %}
+		{% if forloop.counter > count_frequent %}
+			<div id="meals" class="tab-pane fade">
+				<table style="border-collapse: separate; border-spacing: 10px; background-color: #e0ffff">
+				<tr>
+				<td>{{ meal_form.food_selected }}</td>
+				{% if forloop.counter0 < count_user_meals %}
+				<td width="250px">	{{ add_food_names|at_index:forloop.counter0 }} </td>
+				{% endif %}
+				<td width="100px"><b>Qty: </b>{{ meal_form.food_quant }}</td>
+				<td width="120px">{{ meal_form.serve_size }}
+				{{ meal_form.formset_index }}
+				{{ meal_form.today }}
+				{{ meal_form.meal }}
+				<input type="hidden" name="today" value={{ today }}>
+				</tr>
+				
+				{% if meal_form.errors %}
+					{% for field in meal_form %}
+					{% for error in field.errors %}
+					<div class="alert alert-danger">
+					<strong>{{ error|escape }}</strong>
+					</div>
+					{% endfor %}
+					{% endfor %}
+				{% for error in meal_form.non_field_errors %}
+					<div class="alert alert-danger">
+					<strong>{{ error|escape }}</strong>
+					</div>
+				{% endfor %}
+				{% endif %}
+				
+		{% endif %}	
+	{% endfor %}
+			</table>	
+			</div>
+	</div>
+
+</form>
+
+</div>
+
+
+
+{% endblock %}

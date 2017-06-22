@@ -1,0 +1,178 @@
+{% extends "polls/base.html" %}
+{% load poll_extras %}
+
+{% block content %}
+
+<h2>Your Food Diary For:    
+<a href="{% url 'polls:yesterday_food' today %}">&#8678;</a>
+{{ today }}
+							<a href="{% url 'polls:tomorrow_food' today %}">&#8680;</a></h2>
+<table>
+<th></th>
+<th></th>
+<th>Calories</th>
+<th>Carbs</th>
+<th>Fat</th>
+<th>Protein</th>
+<th>Sodium</th>
+<th>Sugar</th>
+<th></th>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align:center;"><i>kcal</i></td>
+<td style="text-align:center;"><i>g</i></td>
+<td style="text-align:center;"><i>g</i></td>
+<td style="text-align:center;"><i>g</i></td>
+<td style="text-align:center;"><i>mg</i></td>
+<td style="text-align:center;"><i>g</i></td>
+<td></td></tr>
+{% for name in meal_names %}
+<tr>
+<td><h2>{{ name }}</h2></td>
+</tr>
+{% for q in meals|at_index:forloop.counter0 %}
+	<tr>
+		<td colspan="2">{{ q.food_item.food }} {{ q.units_consumed|round1 }} {{ q.units }}{{ q.units_consumed|pluralize }}</td>
+		<td style="text-align:center;">{{ q.cal_eaten|round1 }}</td>
+		<td style="text-align:center;">{{ q.carbs|round1 }}</td>
+		<td style="text-align:center;">{{ q.fat|round1 }}</td>
+		<td style="text-align:center;">{{ q.protein|round1 }}</td>
+		<td style="text-align:center;"> {{ q.sodium|round1 }}</td>
+		<td style="text-align:center;">{{ q.sugar|round1 }}</td>
+		<td style="text-align:center;">
+			<a href="{% url 'polls:delete_user_meal' today q.id %}">Delete</a></td>
+	</tr>
+	{% endfor %}
+<tr>
+<td></td>
+<td></td>
+{% for q in query_sums|at_index:forloop.counter0 %}
+	{% if q == " " %}
+		<td></td>
+	{% else %}
+		<td style="text-align:center;"><b>{{ q|round1 }}</b></td>
+	{% endif %}
+{% endfor %}
+</tr>
+
+
+<tr>
+<td style="text-align:left"><a href="{% url 'polls:add_food' today name %}">Add Food | </a></td>
+{% if quicktools_var and meal_name == name %}
+<td style="text-align:left"><a href="{% url 'polls:quick_tools_close' today name %}" >Close Quick Tools</a></td>
+{% else %}
+<td style="text-align:left"><a href="{% url 'polls:quick_tools_open' today name %}" >Quick Tools</a></td>
+{% endif %}
+</tr>
+{% if quicktools_var and meal_name == name %}
+	{% if not quick_selected %}
+		{% for q in quick_tools_list %}
+			{% if q != 'Copy to today' and q != 'Copy yesterday' and q != 'Remember Meal' %}
+				<tr><td></td><td><a href="{% url 'polls:quicktools_options' today name q %}">{{ q }}</a></td></tr>
+			{% endif %}
+		{% endfor %}
+		{% if today != real_today %}
+			<tr><td></td><td><a href="{% url 'polls:quicktools_options' today name quick_tools_list.2 %}">
+			{{ quick_tools_list.2 }}</a></td></tr>
+		{% else %}
+			<tr><td></td><td><a href="{% url 'polls:quicktools_options' today name quick_tools_list.1 %}">
+			{{ quick_tools_list.1 }}</a></td></tr>
+		{% endif %}	
+		{% if meals|at_index:forloop.counter0 %}
+			<tr><td></td><td><a href="{% url 'polls:quicktools_options' today name quick_tools_list.5 %}">
+			{{ quick_tools_list.5 }}</a></td></tr>
+		{% endif %}
+	{% elif quick_selected == "Copy from date" or quick_selected == "Copy to date"%}	
+		{% if copy_dates %}
+			{% for c in copy_dates %}
+				<tr><td></td><td><a href="{% url 'polls:get_record_to_copy' today name c %}">{{ c }}</a></td></tr>
+			{% endfor %}	
+		{% else %}
+			{% if quick_selected == "Copy from date" %}
+				<tr><td></td><td><b>Copy from which meal?</b></td></tr>
+			{% elif quick_selected == "Copy to date" %}
+				<tr><td></td><td><b>Copy to which meal?</b></td></tr>
+			{% endif %}
+			{% for m in meal_names %}
+				<tr><td></td><td><a href="{% url 'polls:copy_to_today' today name m copy_date %}">{{ m }}</a></td></tr>
+			{% endfor %}
+		{% endif %}
+	{% elif quick_selected == "Copy to today" or quick_selected == "Copy yesterday" %}
+		{% if quick_selected == "Copy to today" %}
+			<tr><td></td><td><b>Copy to which meal?</b></td>
+		{% elif quick_selected == "Copy yesterday" %}
+			<tr><td></td><td><b>Copy from which meal?</b></td>
+		{% endif %}
+		{% for c in copy_dates %}
+			{% for m in meal_names %}
+				<tr><td></td><td><a href="{% url 'polls:copy_to_today' today name m c %}">{{ m }}</a></td></tr>
+			{% endfor %}
+		{% endfor %}
+		
+	{% endif %}
+{% endif %}
+{% endfor %}
+<tr>
+<td colspan="2" style="text-align:right;">Totals </td>
+{% for q in query_totals %}
+	{% if q == " " %}
+		<td style="text-align:center;"><b>0</b></td>
+	{% else %}
+		<td style="text-align:center;"><b>{{ q|round1 }}</b></td>
+	{% endif %}
+{% endfor %}
+</tr>
+<tr>
+<td colspan="2" style="text-align:right;">Your Daily Goals </td>
+{% for q in user_profile %}
+<td style="text-align:center;"><b>{{ q|round1 }}</b></td>
+{% endfor %}
+</tr>
+<tr><td colspan="2" style="text-align:right;">Remaining </td>
+{% for q in subtract %}
+<td style="text-align:center;"><b>{{ q|round1 }}</b></td>
+{% endfor %}
+</tr>
+</table>
+<br><br>
+{% if not user_date_combo.done %}
+	<p><b>When you've finished logging all foods and exercise 
+	for this day, click here:</b></p>
+	<a href="{% url 'polls:completed_entry' today %}" class="button" style=" position: relative; left:250px; font-size: medium">Complete This Entry</a>
+	
+{% else %}
+	{% if warning %}
+		<br>Based on your total calories consumed for today, you are likely not eating enough.<br><br>
+
+		For safe weight loss, the National Institutes of Health recommends no less than <br>
+		1000-1200 calories for women and 1200-1500 calories for men.<br><br>
+
+		Completing your diary with fewer than the minimum calories noted above will not generate a <br>
+		news feed post for that day, or show a five-week weight projection. <br><br>
+
+		Even during weight loss, it's important to meet your body's basic nutrient and energy needs. <br>
+		Over time, not eating enough can lead to nutrient deficiencies, unpleasant side effects & other <br>
+		serious health problems. <br><br>
+
+		To safely meet your goals:<br><br>
+
+		Focus on consuming nutrient-rich foods and beverages <br>
+		Check your progress in MyFitnessPal throughout the day <br>
+		Add nutritious snacks between meals as needed              <br>
+	{% else %}
+		<p>If every day were like today, you'd weigh...{{ project_weight|round1 }} lb{{ project_weight|pluralize }} in 5 weeks.</p>
+	{% endif %}
+	<br>
+	<a href="{% url 'polls:make_additional_entries' today %}" class="button" style="position: relative; left:250px; font-size: medium">Make Additional Entries</a>
+	<br>
+	
+{% endif %}
+
+
+
+
+
+
+
+{% endblock %}

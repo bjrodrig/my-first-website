@@ -1,0 +1,66 @@
+{% extends "polls/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+  {{ formset.management_form }}
+  <div role="tabpanel">
+    <ul class="nav nav-tabs" role="tablist">
+      {% for form in formset %}
+        <li role="presentation" class="{% if forloop.first %}active{% endif %}">
+          <a href="#id_form-{{ forloop.counter0 }}" aria-controls="id_form-{{ forloop.counter0 }}" role="tab" data-toggle="tab">
+            {% if forloop.counter0 < formset.initial_forms|length %}
+              Form {{ forloop.counter }}
+            {% else %}
+              New Form
+            {% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="tab-content">
+      {% for form in formset %}
+        <div role="tabpanel" class="tab-pane{% if forloop.first %} active{% endif %}" id="id_form-{{ forloop.counter0 }}">
+          {% crispy form %}
+          {% if form.instance.pk %}
+             <input id="id_form-{{ forloop.counter0 }}-id" name="form-{{ forloop.counter0 }}-id" type="hidden" value="{{ form.instance.id }}">
+          {% endif %}
+          {% if forloop.counter0 < formset.initial_forms|length %}
+            <form method="post" enctype="multipart/form-data">{% csrf_token %}
+  {{ formset.management_form }}
+  <div role="tabpanel">
+    <ul class="nav nav-tabs" role="tablist">
+      {% for form in formset %}
+        <li role="presentation" class="{% if forloop.first %}active{% endif %}">
+          <a href="#id_form-{{ forloop.counter0 }}" aria-controls="id_form-{{ forloop.counter0 }}" role="tab" data-toggle="tab">
+            {% if forloop.counter0 < formset.initial_forms|length %}
+              Form{{ forloop.counter }}
+            {% else %}
+              New Form
+            {% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="tab-content">
+      {% for form in formset %}
+        <div role="tabpanel" class="tab-pane{% if forloop.first %} active{% endif %}" id="id_form-{{ forloop.counter0 }}">
+          {% crispy form %}
+          {% if form.instance.pk %}
+             <input id="id_form-{{ forloop.counter0 }}-id" name="form-{{ forloop.counter0 }}-id" type="hidden" value="{{ form.instance.id }}">
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+{% endblock %}

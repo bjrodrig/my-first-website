@@ -1,0 +1,16 @@
+{% extends "polls/base.html" %}
+
+{% block content %}
+{% if user.is_anonymous %}
+	<br><br>
+	<a href="{% url 'polls:login' %}"><h4>Login</h4></a> <p><br></p>
+	<a href="{% url 'polls:signup' %}"><h4>Sign Up</h4></a>
+{% else %}
+	<h1>Hi {{ user }} </h1>
+	<a href="{% url 'polls:food' %}">Food</a>
+	<br>
+	<a href="{% url 'polls:my_meals' 'None' %}">My Meals</a>
+	{% endif %}
+{% endblock %}
+
+

@@ -1,0 +1,73 @@
+{% load poll_extras %}
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+td {
+    text-align: left;
+}
+
+.button {
+  
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #000000;
+  padding: 2px 6px 2px 6px;
+  border-top: 1px solid #CCCCCC;
+  border-right: 1px solid #333333;
+  border-bottom: 1px solid #333333;
+  border-left: 1px solid #CCCCCC;
+}
+</style>
+</head>
+<body>
+
+
+
+
+
+<h1>Your Suggested Fitness and Nutrition Goals</h1>
+
+<table width="700px">
+<tr>
+	<th width="30%">Nutritional Goals</th>
+	<th width="70%">Target</th>
+</tr>
+<tr>
+	<td>Net Calories Consumed / Day*</td>
+	<td style="text-align:center;">{{ profile.net_calories }} Calories / Day </td>
+</tr>
+</table>
+<br>
+<i style="font-size:12px">Net Calories Consumed = Total Calories Consumed - Exercise Calories burned. 
+So the more you exercise, the more you can eat.</i>
+<br><br>
+<table width="700px">
+<tr>
+	<th width="30%">Fitness Goals</th>
+	<th width="70%">Target</th>
+</tr>
+<tr>
+	<td>Workouts / Week</td>
+	<td style="text-align:center;">{{ profile.workouts_week }}</td>
+</tr>
+<tr>
+	<td> Minutes / Workout </td>
+	<td style="text-align:center;">{{ profile.min_per_workout }}</td>
+</tr>
+</table>
+
+<p>If you follow this plan, your projected weight {{ gain_or_loss }} is 
+{{ change_per_week }} pound{{ change_per_week|pluralize }}/week. <br>
+You should {{ gain_or_lose }} {{ five_week_proj|round1 }} lb{{ five_week_proj|pluralize }} by {{five_weeks}}.</p>
+
+
+
+<a href="{% url 'polls:index' %}" class="button" style="position: relative; left:250px;">Get Started Now</a>
+</body>
+

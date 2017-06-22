@@ -1,0 +1,98 @@
+{% extends "polls/base.html" %}
+{% load poll_extras %}
+
+{% block content %}
+
+
+<br><br>
+<h3>Your Personal Meals</h3>
+<br>
+
+<h4>Search your personal meals:</h4>
+<form action="{% url 'polls:my_meals' none %}" method="post">
+	{% csrf_token %}
+	{{ form }}
+	<input type="submit" value="Search" />
+</form>
+<br>
+<p style="font-size:12px">Click on a meal on the right to view or delete. To create
+a meal, <br> add the foods you want to your <a href="{% url 'polls:food' %}">food diary</a>
+and click "Quick Tools" then "Remember Meal"</p>
+<br>
+
+<h4>Matching Meals:</h4>
+{% for q in get_meal_2 %}
+	<a href="{% url 'polls:my_meals' q.title %}">{{ q.title }}</a><br>
+{% endfor %}
+
+
+<br><br>
+{% if not title or title == "None" %}
+	<h4>Meal details</h4>
+{% else %}
+	<h4>Meal details for "{{ title }}"</h4>
+{% endif %}
+<br>
+<table style="border-collapse: separate; border-spacing: 5px;" >
+<tr>
+<th><b>Items in this Meal</b></th>
+<th></th>
+<th>Calories</th>
+<th>Carbs</th>
+<th>Fat</th>
+<th>Protein</th>
+<th>Sodium</th>
+<th>Sugar</th>
+</tr>
+{% for q in specific_meal %}
+	<tr>
+		<td colspan="2">{{ q.food_item.food }} {{ q.units_consumed|round1 }} {{ q.units }}{{ q.units_consumed|pluralize }}</td>
+		<td style="text-align:center;">{{ q.cal_eaten|round1 }}</td>
+		<td style="text-align:center;">{{ q.carbs|round1 }}</td>
+		<td style="text-align:center;">{{ q.fat|round1 }}</td>
+		<td style="text-align:center;">{{ q.protein|round1 }}</td>
+		<td style="text-align:center;"> {{ q.sodium|round1 }}</td>
+		<td style="text-align:center;">{{ q.sugar|round1 }}</td>
+	</tr>
+{% endfor %}
+<tr>
+<td><b>Totals:</b></td>
+<td></td>
+{% if query_sums %}
+	{% for q in query_sums %}
+		{% if q == " " or not q %}
+			<td style="text-align:center;">0</td>
+		{% else %}
+			<td style="text-align:center;"><b>{{ q|round1 }}</b></td>
+		{% endif %}
+	{% endfor %}
+{% else %}
+	{% for c in categories %}
+		<td style="text-align:center;">0</td>
+	{% endfor %}
+{% endif %}
+</tr>
+</table>
+{% if title and title != "None" %}
+	<form action="{% url 'polls:my_meals_delete' title %}" method="POST" onsubmit="return myFunction()">
+		{% csrf_token %}
+		<input type="submit" name="submit" value="Delete" />
+	</form>
+{% endif %}
+	
+
+
+<script>
+function myFunction() {
+    if (confirm("Are you sure you want to delete this meal?")){
+		return true;
+	}
+    else {
+		return false;
+	}
+}
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "polls/base.html" %}
+{% load poll_extras %}
+
+{% block content %}
+<form method="post">
+	{% csrf_token %}
+	<b>Name this meal</b><br>
+	{{ form }}
+	<input type="submit" value="Save Meal" />
+</form>
+<br><br><br>
+<table>
+<tr>
+<th><b>Items in this Meal</b></th>
+<th></th>
+<th>Calories</th>
+<th>Carbs</th>
+<th>Fat</th>
+<th>Protein</th>
+<th>Sodium</th>
+<th>Sugar</th>
+</tr>
+{% for q in meals %}
+	<tr>
+		<td colspan="2">{{ q.food_item.food }} {{ q.units_consumed|round1 }} {{ q.units }}{{ q.units_consumed|pluralize }}</td>
+		<td style="text-align:center;">{{ q.cal_eaten|round1 }}</td>
+		<td style="text-align:center;">{{ q.carbs|round1 }}</td>
+		<td style="text-align:center;">{{ q.fat|round1 }}</td>
+		<td style="text-align:center;">{{ q.protein|round1 }}</td>
+		<td style="text-align:center;"> {{ q.sodium|round1 }}</td>
+		<td style="text-align:center;">{{ q.sugar|round1 }}</td>
+	</tr>
+{% endfor %}
+<tr>
+<td></td>
+<td></td>
+{% for q in query_sums %}
+	{% if q == " " or not q %}
+		<td></td>
+	{% else %}
+		<td style="text-align:center;"><b>{{ q|round1 }}</b></td>
+	{% endif %}
+{% endfor %}
+</tr>
+</table>
+
+
+
+
+{% endblock %}

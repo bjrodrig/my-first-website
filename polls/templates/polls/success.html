@@ -1,0 +1,11 @@
+{% extends "polls/base.html" %}
+
+{% block content %}
+
+<h2>Food was successfuly added to the database.</h2>
+<a href="{% url 'polls:index' %}">Go to Home Page</a> <br>
+<a href="{% url 'polls:food' %}">Go to Main Food Page</a> <br>
+
+
+
+{% endblock %}
