@@ -1,7 +1,7 @@
 import datetime
 import time
 
-from tabination.views import TabView
+
 from django.shortcuts import get_object_or_404, render, redirect, render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect, HttpResponse
