@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '5+vp0g03n$ai%n#9ss7*766i@!qh(bwy1m36w6v_e9#cr8tsn-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['http://fitness.pythonanywhere.com/']
+ALLOWED_HOSTS = ['*', 'localhost']
 
 
 # Application definition
