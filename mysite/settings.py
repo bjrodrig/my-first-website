@@ -25,7 +25,7 @@ SECRET_KEY = '5+vp0g03n$ai%n#9ss7*766i@!qh(bwy1m36w6v_e9#cr8tsn-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['http://fitness.pythonanywhere.com/']
 
 
 # Application definition
