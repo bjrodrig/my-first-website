@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 	'crispy_forms',
 	'polls.static.polls.bootstrap',
-	'mod_wsgi.server',
+	#'mod_wsgi.server',
 ]
 
 MIDDLEWARE = [

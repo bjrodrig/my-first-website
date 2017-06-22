@@ -1,9 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, HTML
-from crispy_forms.bootstrap import TabHolder, Tab
+
 from django.forms.formsets import BaseFormSet
 from django.core.validators import MinValueValidator
 
@@ -48,11 +46,7 @@ class QuickAddForm(forms.Form):
 	servings = forms.FloatField(label="Calories: ", validators=[MinValueValidator(.01)])
 	meals = forms.ChoiceField(label="Meal Name: ", choices=MEALS)
 	
-	def __init__(self, *args, **kwargs):
-		super(QuickAddForm, self).__init__(*args, **kwargs)
-		self.helper = FormHelper(self)
-		self.helper.form_tag = False
-		self.helper.disable_csrf = True
+	
 		
 class PersonalMealsForm(forms.Form):
 	
