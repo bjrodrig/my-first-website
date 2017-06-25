@@ -1,6 +1,9 @@
 from django.conf.urls import url
 from django.contrib.auth import views as auth_views
 from . import views
+from polls.views import SignUpWizard
+from polls.forms import SignUpForm
+from polls.models import UserProfileForm
 
 app_name = 'polls'
 urlpatterns = [
@@ -9,7 +12,8 @@ urlpatterns = [
 	url(r'^$', views.index, name='index'),
 	
 	#signup/login/logout
-	url(r'^signup/$', views.signup, name='signup'),
+	#url(r'^signup/$', views.signup, name='signup'),
+	url(r'^signup/$', SignUpWizard.as_view([SignUpForm, UserProfileForm]), name="signup"),
 	url(r'^login/$', auth_views.login, name='login'),
 	url(r'^logout/$', auth_views.logout, name='logout'),
 	

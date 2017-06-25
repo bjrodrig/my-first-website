@@ -9,16 +9,19 @@ from django.test import TestCase, RequestFactory
 from django.test.client import Client, RequestFactory
 from django.test import Client
 from django.urls import reverse
+from formtools.wizard.views import CookieWizardView
 
 from django.db.models import Count
 
 from .models import UserProfileForm, UserProfile, UserDays, RememberMeals, UserMeals
-from .views import index, food, signup, user_profile, calculate_net_calories, calculate_BMR, get_nutrient_goals
+from .views import index, food, user_profile, calculate_net_calories, calculate_BMR, get_nutrient_goals
 from .views import *
 from .forms import SignUpForm, UserMealsForm, QuickAddForm
 from polls import views
 
 class SimpleTest(TestCase):
+
+	
 
 	def setUp(self):
 		self.factory = RequestFactory()
@@ -80,40 +83,11 @@ class SimpleTest(TestCase):
 	def test_sign_up_gets_correct_form(self):
 		response = self.client.get('/polls/signup/')
 		self.assertEqual(response.status_code, 200)
-		self.assertTemplateUsed(response, 'polls/signup.html')
+		self.assertTemplateUsed(response, 'formtools/wizard/wizard_form.html')
 		self.assertIsInstance(response.context['form'], SignUpForm)
 	
-	def test_sign_up_redirect(self):
-		form_data = {
-			'username': 'jacob1',
-			'first_name': 'Jacob',
-			'last_name': 'Lopez',
-			'password1': 'hello123',
-			'password2': 'hello123',
-			'email': 'jacob@gmail.com',
-		}
-		response = self.client.post('/polls/signup/', form_data)
-		self.assertRedirects(response, '/polls/user_profile/')
-		get_user = User.objects.get(username='jacob1', email='jacob@gmail.com')
-		self.assertIsNotNone(get_user.username)
-		self.assertTrue(get_user.is_authenticated)
-		try:
-			with transaction.atomic():
-				new_user = User.objects.create_user(username='jacob1', password='hello123', email='jodie@gmail.com')
-		except:
-			new_user = 0
-		if new_user != 0:
-			self.fail("Can't have two users with same username")
-		# figure this out-try to log in user with wrong password
-		c = Client()
-		logged_in = c.login(username='jacob1', password='hello122')
-		user = authenticate(username='jacob1', password='hello122')
-		self.assertEqual(user, None)
-		req = self.factory.get(reverse('polls:login'))
-		form = AuthenticationForm(request=req, data={
-			'username': 'jacob1', 'password': 'wrong_password'})
-		self.assertFalse(form.is_valid())
-		
+	
+	
 class UpdateFoodDiary(TestCase):
 
 	def setUp(self):
@@ -138,6 +112,12 @@ class SetUp_Class(TestCase):
 def change_form_data_and_run_form(form_field, form_field_value):
 	global profile_form_data
 	profile_form_data = {
+			'username': 'jacob',
+			'first_name': 'jacob',
+			'last_name': 'cruz',
+			'email': 'jacob@gmail.com',
+			'password1': 'hello123',
+			'password2': 'hello123',
 			'weight': 110,
 			'height_ft': 5,
 			'height_in': 0,
@@ -162,11 +142,7 @@ class UserProfileTest(TestCase):
 		self.client.login(username='jacob', password='top_secret')
 
 	
-	def test_get_request_user_profile(self):
-		response = self.client.get('/polls/user_profile/')
-		self.assertEqual(response.status_code, 200)
-		self.assertTemplateUsed(response, 'polls/user_profile.html')
-		self.assertIsInstance(response.context['form'], UserProfileForm)
+	
 		
 	
 		
@@ -259,17 +235,8 @@ class UserProfileTest(TestCase):
 		valid_form = change_form_data_and_run_form('min_per_workout', 0)
 		self.assertTrue(valid_form)
 		
-	def test_post_valid_data(self):
-		valid_form = change_form_data_and_run_form('weight', 110)
-		response = self.client.post('/polls/user_profile/', profile_form_data)
-		self.assertEqual(response.status_code, 200)
-		self.assertTemplateUsed(response, 'polls/initial_goals.html')
-		
-	def test_post_invalid_data(self):
-		valid_form = change_form_data_and_run_form('weight', None)
-		response = self.client.post('/polls/user_profile/', profile_form_data)
-		self.assertEqual(response.status_code, 200)
-		self.assertTemplateUsed(response, 'polls/user_profile.html')
+
+	
 		
 	@freeze_time("2017-05-29")
 	def test_calculate_bmr(self):
@@ -328,96 +295,7 @@ class UserProfileTest(TestCase):
 		self.assertEqual(90.15, round(profile.protein, 2))
 		self.assertEqual(2300, profile.sodium)
 		self.assertEqual(45, profile.sugar)
-	
-	@freeze_time("2017-05-29")	
-	def test_update_user_profile_model(self):
-		profile_form_data = {
-			'weight': 110,
-			'height_ft': 5,
-			'height_in': 0,
-			'goal_weight': 104,
-			'gender': 'F',
-			'birth_date': '10/01/1991',
-			'zip_code': 10005,
-			'lifestyle': 'VA',
-			'workouts_week': 0,
-			'min_per_workout': 30,
-			'goal': 'L1',
-		}
-		response = self.client.post('/polls/user_profile/', profile_form_data)
-		get_class = SetUp_Class()
-		get_profile = UserProfile.objects.get(user=self.user)
-		self.assertEqual(get_profile.weight, 110)
-		self.assertEqual(get_profile.goal_weight, 104)
-		self.assertEqual(get_profile.min_per_workout, 30)
-		self.assertEqual(get_profile.net_calories, 1506)
-		self.assertEqual(get_profile.carbs, 188.25)
-		self.assertEqual(get_profile.fat, 50.2)
 		
-	@freeze_time("2017-05-29")	
-	def test_correct_variables_user_profile_template(self):
-		profile_form_data = {
-			'weight': 110,
-			'height_ft': 5,
-			'height_in': 0,
-			'goal_weight': 104,
-			'gender': 'F',
-			'birth_date': '10/01/1991',
-			'zip_code': 10005,
-			'lifestyle': 'VA',
-			'workouts_week': 0,
-			'min_per_workout': 30,
-			'goal': 'L1',
-		}
-		response = self.client.post('/polls/user_profile/', profile_form_data)
-		self.assertContains(response, "1506.0 Calories / Day")
-		self.assertContains(response, "0")
-		self.assertContains(response, "30")
-		self.assertContains(response, "If you follow this plan, your projected weight loss is ")
-		self.assertContains(response, "1.0 pound/week. <br>")
-		self.assertContains(response, "You should lose 5.0 lbs by")
-	
-	@freeze_time("2017-05-29")	
-	def test_correct_variables_user_profile_template_gain_weight(self):
-		profile_form_data = {
-			'weight': 110,
-			'height_ft': 5,
-			'height_in': 0,
-			'goal_weight': 104,
-			'gender': 'F',
-			'birth_date': '10/01/1991',
-			'zip_code': 10005,
-			'lifestyle': 'VA',
-			'workouts_week': 0,
-			'min_per_workout': 30,
-			'goal': 'G1',
-		}
-		response = self.client.post('/polls/user_profile/', profile_form_data)
-		self.assertContains(response, "2506.0 Calories / Day")
-		self.assertContains(response, "If you follow this plan, your projected weight gain is ")
-		self.assertContains(response, "1.0 pound/week. <br>")
-		self.assertContains(response, "You should gain 5.0 lbs by")
-		
-	@freeze_time("2017-05-29")
-	def test_correct_variables_user_profile_template_sedentary_lose_two(self):
-		profile_form_data = {
-			'weight': 110,
-			'height_ft': 5,
-			'height_in': 0,
-			'goal_weight': 104,
-			'gender': 'F',
-			'birth_date': '10/01/1991',
-			'zip_code': 10005,
-			'lifestyle': 'S',
-			'workouts_week': 0,
-			'min_per_workout': 30,
-			'goal': 'L2',
-		}
-		response = self.client.post('/polls/user_profile/', profile_form_data)
-		self.assertContains(response, "1200 Calories / Day")
-		self.assertContains(response, "If you follow this plan, your projected weight loss is ")
-		self.assertContains(response, "0.39 pounds/week. <br>")
-		self.assertContains(response, "You should lose 2.0 lbs by")
 		
 	def test_five_weeks_from_now(self):
 		today = datetime.datetime.strptime("5/29/2017", '%m/%d/%Y').date()
@@ -430,12 +308,7 @@ class UserProfileTest(TestCase):
 		five_weeks = five_weeks_from_now()
 		self.assertEqual(five_weeks, "July 03, 2017")
 		
-	def test_get_started_link(self):
-		valid_form = change_form_data_and_run_form('weight', 110)
-		response = self.client.post('/polls/user_profile/', profile_form_data)
-		self.assertContains(response, '<a href="%s" class="button" style="position: relative; left:250px;">Get Started Now</a>' 
-		                     % reverse("polls:index"), html=True)
-		#print(response.content)
+	
 		
 class Profile(object):
 
