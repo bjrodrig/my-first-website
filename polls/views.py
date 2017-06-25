@@ -591,10 +591,12 @@ def calculate_net_calories(profile):
 				'L2': -1000,
 				'L1.5': -750,
 				'L1': -500,
+				'L.5': -250,
 				'M': 0,
 				'G.5': 250,
 				'G1': 500,
 			}
+	print("goal ", profile.goal)
 	net_calories = BMR + goal.get(profile.goal)
 	if profile.gender == 'M':
 		net_calories = max(net_calories, 1500)
