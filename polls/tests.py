@@ -40,7 +40,7 @@ class SimpleTest(TestCase):
 		self.assertContains(response, "My Meals")
 		self.assertContains(response, "logout")
 		self.assertContains(response, '<a href="%s">Food</a>' % reverse("polls:food"), html=True)
-		self.assertContains(response, '<a href="%s">My Meals</a>' % reverse("polls:my_meals", kwargs={'title': ""}), html=True)
+		self.assertContains(response, '<a href="%s">My Meals</a>' % reverse("polls:my_meals", kwargs={'title': "None"}), html=True)
 		self.assertNotContains(response, "Login")
 		self.assertNotContains(response, "Sign Up")
 		
