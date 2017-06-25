@@ -9,7 +9,7 @@
 <br>
 
 <h4>Search your personal meals:</h4>
-<form action="{% url 'polls:my_meals' none %}" method="post">
+<form action="{% url 'polls:my_meals' 'None' %}" method="post">
 	{% csrf_token %}
 	{{ form }}
 	<input type="submit" value="Search" />
