@@ -21,7 +21,6 @@ from polls import views
 
 class SimpleTest(TestCase):
 
-	
 
 	def setUp(self):
 		self.factory = RequestFactory()
@@ -86,7 +85,7 @@ class SimpleTest(TestCase):
 		self.assertTemplateUsed(response, 'formtools/wizard/wizard_form.html')
 		self.assertIsInstance(response.context['form'], SignUpForm)
 	
-	
+
 	
 class UpdateFoodDiary(TestCase):
 
@@ -141,11 +140,6 @@ class UserProfileTest(TestCase):
 		self.user = user
 		self.client.login(username='jacob', password='top_secret')
 
-	
-	
-		
-	
-		
 	def test_invalid_min_per_workout(self):
 		valid_form = change_form_data_and_run_form('min_per_workout', 30.5)
 		self.assertFalse(valid_form)
@@ -235,9 +229,6 @@ class UserProfileTest(TestCase):
 		valid_form = change_form_data_and_run_form('min_per_workout', 0)
 		self.assertTrue(valid_form)
 		
-
-	
-		
 	@freeze_time("2017-05-29")
 	def test_calculate_bmr(self):
 		profile = Profile(110, 5, 0, '10/01/1991', 'F', 'S', 'L2', 
@@ -295,7 +286,7 @@ class UserProfileTest(TestCase):
 		self.assertEqual(90.15, round(profile.protein, 2))
 		self.assertEqual(2300, profile.sodium)
 		self.assertEqual(45, profile.sugar)
-		
+
 		
 	def test_five_weeks_from_now(self):
 		today = datetime.datetime.strptime("5/29/2017", '%m/%d/%Y').date()
@@ -308,7 +299,6 @@ class UserProfileTest(TestCase):
 		five_weeks = five_weeks_from_now()
 		self.assertEqual(five_weeks, "July 03, 2017")
 		
-	
 		
 class Profile(object):
 
