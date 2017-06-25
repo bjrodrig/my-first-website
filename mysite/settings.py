@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 	'crispy_forms',
 	'polls.static.polls.bootstrap',
+	'formtools',
 	#'mod_wsgi.server',
 ]
 
@@ -64,9 +65,16 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+				#'django.template.loaders.app_directories.Loader',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+				#'admin_tools.template_loaders.Loader',
             ],
+		#loaders': [
+		#	'django.template.loaders.filesystem.Loader',
+		#	'django.template.loaders.app_directories.Loader',
+			#'admin_tools.template_loaders.Loader',
+		#],
         },
     },
 ]
@@ -117,9 +125,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-TEMPLATE_DIRS = (
-	'C:/users/Barbara/Desktop/mfp/mysite2/polls/templates/',
-)
+
 
 
 # Static files (CSS, JavaScript, Images)

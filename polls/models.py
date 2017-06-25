@@ -10,6 +10,8 @@ from django.core.validators import RegexValidator, MinValueValidator
 
 
 
+
+
 class UserProfile(models.Model):
 
 	LIFESTYLES = (
@@ -60,6 +62,8 @@ class UserProfileForm(ModelForm):
 		fields = ['weight', 'height_ft', 'height_in', 'goal_weight', 'gender', 'birth_date',
 		          'zip_code', 'lifestyle', 'workouts_week', 'min_per_workout',
 				  'goal']
+				  
+
 	
 class FoodDatabase(models.Model):
 

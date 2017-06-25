@@ -9,16 +9,46 @@ from django.test import TestCase, RequestFactory
 from django.test.client import Client, RequestFactory
 from django.test import Client
 from django.urls import reverse
+from formtools.wizard.views import CookieWizardView
 
 from django.db.models import Count
 
 from .models import UserProfileForm, UserProfile, UserDays, RememberMeals, UserMeals
-from .views import index, food, signup, user_profile, calculate_net_calories, calculate_BMR, get_nutrient_goals
+from .views import index, food, user_profile, calculate_net_calories, calculate_BMR, get_nutrient_goals
 from .views import *
 from .forms import SignUpForm, UserMealsForm, QuickAddForm
 from polls import views
 
 class SimpleTest(TestCase):
+
+	wizard_step_data = ({
+			'form1-username': 'jacob1',
+			'form1-first_name': 'Jacob',
+			'form1-last_name': 'Lopez',
+			'form1-password1': 'hello123',
+			'form1-password2': 'hello123',
+			'form1-email': 'jacob@gmail.com',
+			'sign_up_wizard_current_step': 'form1',
+			'form-INITIAL_FORMS': '0',
+			'form-TOTAL_FORMS': '1',
+			'form-MAX_NUM_FORMS': '2',},
+			{'form2-weight': 110,
+			'form2-height_ft': 5,
+			'form2_height_in': 0,
+			'form2-goal_weight': 104,
+			'form2-gender': 'F',
+			'form2-birth_date': '10/01/1991',
+			'form2-zip_code': 10005,
+			'form2-lifestyle': 'S',
+			'form2-workouts_week': 0,
+			'form2-min_per_workout': 30,
+			'form2-goal': 'L2',
+			'sign_up_wizard_current_step': 'form2',},
+			{'form3-INITIAL_FORMS': '0',
+			'form3-TOTAL_FORMS': '2',
+			'form3-MAX_NUM_FORMS': '0',
+			'sign_up_wizard_current_step': 'form4',},
+			)
 
 	def setUp(self):
 		self.factory = RequestFactory()
@@ -40,7 +70,7 @@ class SimpleTest(TestCase):
 		self.assertContains(response, "My Meals")
 		self.assertContains(response, "logout")
 		self.assertContains(response, '<a href="%s">Food</a>' % reverse("polls:food"), html=True)
-		self.assertContains(response, '<a href="%s">My Meals</a>' % reverse("polls:my_meals", kwargs={'title': ""}), html=True)
+		self.assertContains(response, '<a href="%s">My Meals</a>' % reverse("polls:my_meals", kwargs={'title': "None"}), html=True)
 		self.assertNotContains(response, "Login")
 		self.assertNotContains(response, "Sign Up")
 		
@@ -80,19 +110,43 @@ class SimpleTest(TestCase):
 	def test_sign_up_gets_correct_form(self):
 		response = self.client.get('/polls/signup/')
 		self.assertEqual(response.status_code, 200)
-		self.assertTemplateUsed(response, 'polls/signup.html')
+		self.assertTemplateUsed(response, 'formtools/wizard/wizard_form.html')
 		self.assertIsInstance(response.context['form'], SignUpForm)
 	
 	def test_sign_up_redirect(self):
+	
+		my_form_wizard_view = SignUpWizard.as_view([SignUpForm, UserProfileForm])
+		
 		form_data = {
-			'username': 'jacob1',
-			'first_name': 'Jacob',
-			'last_name': 'Lopez',
-			'password1': 'hello123',
-			'password2': 'hello123',
-			'email': 'jacob@gmail.com',
+			'my_form_wizard_view-current_step': '0',
+			'0-username': 'jacob1',
+			'0-first_name': 'Jacob',
+			'0-last_name': 'Lopez',
+			'0-password1': 'hello123',
+			'0-password2': 'hello123',
+			'0-email': 'jacob@gmail.com',
+			'my_form_wizard_view-current_step': '1',
+			'1-weight': 110,
+			'1-height_ft': 5,
+			'1-height_in': 0,
+			'1-goal_weight': 104,
+			'1-gender': 'F',
+			'1-birth_date': '10/01/1991',
+			'1-zip_code': 10005,
+			'1-lifestyle': 'S',
+			'1-workouts_week': 0,
+			'1-min_per_workout': 30,
+			'1-goal': 'L2',
+			'my_form_wizard_view-INITIAL_FORMS': '0',
+			'my_form_wizard_view-TOTAL_FORMS': '2',
+			'my_form_wizard_view-MAX_NUM_FORMS': '100',
+			
 		}
-		response = self.client.post('/polls/signup/', form_data)
+		wizard_step_1_data = {
+			'sign_up_wizard_current_step': 'form1',
+		}
+		
+		response = self.client.post('/polls/signup/', data=form_data)
 		self.assertRedirects(response, '/polls/user_profile/')
 		get_user = User.objects.get(username='jacob1', email='jacob@gmail.com')
 		self.assertIsNotNone(get_user.username)
@@ -113,7 +167,7 @@ class SimpleTest(TestCase):
 		form = AuthenticationForm(request=req, data={
 			'username': 'jacob1', 'password': 'wrong_password'})
 		self.assertFalse(form.is_valid())
-		
+	
 class UpdateFoodDiary(TestCase):
 
 	def setUp(self):
@@ -138,6 +192,12 @@ class SetUp_Class(TestCase):
 def change_form_data_and_run_form(form_field, form_field_value):
 	global profile_form_data
 	profile_form_data = {
+			'username': 'jacob',
+			'first_name': 'jacob',
+			'last_name': 'cruz',
+			'email': 'jacob@gmail.com',
+			'password1': 'hello123',
+			'password2': 'hello123',
 			'weight': 110,
 			'height_ft': 5,
 			'height_in': 0,
@@ -163,9 +223,9 @@ class UserProfileTest(TestCase):
 
 	
 	def test_get_request_user_profile(self):
-		response = self.client.get('/polls/user_profile/')
+		response = self.client.get('/polls/signup/')
 		self.assertEqual(response.status_code, 200)
-		self.assertTemplateUsed(response, 'polls/user_profile.html')
+		self.assertTemplateUsed(response, 'formtools/wizard/wizard_form.html')
 		self.assertIsInstance(response.context['form'], UserProfileForm)
 		
 	
@@ -261,15 +321,15 @@ class UserProfileTest(TestCase):
 		
 	def test_post_valid_data(self):
 		valid_form = change_form_data_and_run_form('weight', 110)
-		response = self.client.post('/polls/user_profile/', profile_form_data)
+		response = self.client.post('/polls/signup/', profile_form_data)
 		self.assertEqual(response.status_code, 200)
 		self.assertTemplateUsed(response, 'polls/initial_goals.html')
 		
 	def test_post_invalid_data(self):
 		valid_form = change_form_data_and_run_form('weight', None)
-		response = self.client.post('/polls/user_profile/', profile_form_data)
+		response = self.client.post('/polls/signup/', profile_form_data)
 		self.assertEqual(response.status_code, 200)
-		self.assertTemplateUsed(response, 'polls/user_profile.html')
+		self.assertTemplateUsed(response, 'formtools/wizard/wizard_form.html')
 		
 	@freeze_time("2017-05-29")
 	def test_calculate_bmr(self):
@@ -332,6 +392,12 @@ class UserProfileTest(TestCase):
 	@freeze_time("2017-05-29")	
 	def test_update_user_profile_model(self):
 		profile_form_data = {
+			'username': 'jacob',
+			'first_name': 'jacob',
+			'last_name': 'cruz',
+			'email': 'jacob@gmail.com',
+			'password1': 'hello123',
+			'password2': 'hello123',
 			'weight': 110,
 			'height_ft': 5,
 			'height_in': 0,
@@ -344,7 +410,7 @@ class UserProfileTest(TestCase):
 			'min_per_workout': 30,
 			'goal': 'L1',
 		}
-		response = self.client.post('/polls/user_profile/', profile_form_data)
+		response = self.client.post('/polls/signup/', profile_form_data)
 		get_class = SetUp_Class()
 		get_profile = UserProfile.objects.get(user=self.user)
 		self.assertEqual(get_profile.weight, 110)
@@ -357,6 +423,12 @@ class UserProfileTest(TestCase):
 	@freeze_time("2017-05-29")	
 	def test_correct_variables_user_profile_template(self):
 		profile_form_data = {
+			'username': 'jacob',
+			'first_name': 'jacob',
+			'last_name': 'cruz',
+			'email': 'jacob@gmail.com',
+			'password1': 'hello123',
+			'password2': 'hello123',
 			'weight': 110,
 			'height_ft': 5,
 			'height_in': 0,
@@ -369,7 +441,7 @@ class UserProfileTest(TestCase):
 			'min_per_workout': 30,
 			'goal': 'L1',
 		}
-		response = self.client.post('/polls/user_profile/', profile_form_data)
+		response = self.client.post('/polls/signup/', profile_form_data)
 		self.assertContains(response, "1506.0 Calories / Day")
 		self.assertContains(response, "0")
 		self.assertContains(response, "30")
@@ -380,6 +452,12 @@ class UserProfileTest(TestCase):
 	@freeze_time("2017-05-29")	
 	def test_correct_variables_user_profile_template_gain_weight(self):
 		profile_form_data = {
+			'username': 'jacob',
+			'first_name': 'jacob',
+			'last_name': 'cruz',
+			'email': 'jacob@gmail.com',
+			'password1': 'hello123',
+			'password2': 'hello123',
 			'weight': 110,
 			'height_ft': 5,
 			'height_in': 0,
@@ -401,6 +479,12 @@ class UserProfileTest(TestCase):
 	@freeze_time("2017-05-29")
 	def test_correct_variables_user_profile_template_sedentary_lose_two(self):
 		profile_form_data = {
+			'username': 'jacob',
+			'first_name': 'jacob',
+			'last_name': 'cruz',
+			'email': 'jacob@gmail.com',
+			'password1': 'hello123',
+			'password2': 'hello123',
 			'weight': 110,
 			'height_ft': 5,
 			'height_in': 0,
@@ -432,7 +516,7 @@ class UserProfileTest(TestCase):
 		
 	def test_get_started_link(self):
 		valid_form = change_form_data_and_run_form('weight', 110)
-		response = self.client.post('/polls/user_profile/', profile_form_data)
+		response = self.client.post('/polls/signup/', profile_form_data)
 		self.assertContains(response, '<a href="%s" class="button" style="position: relative; left:250px;">Get Started Now</a>' 
 		                     % reverse("polls:index"), html=True)
 		#print(response.content)

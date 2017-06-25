@@ -15,6 +15,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, F, FloatField
 from django.forms import formset_factory
+from formtools.wizard.views import CookieWizardView
 
 
 from polls.forms import SignUpForm, UserMealsForm, QuickAddForm, PersonalMealsForm, MultipleMealsForm, BaseMealFormSet
@@ -55,23 +56,67 @@ volume = ['cup', 'teaspoon', 'tablespoon', 'fl oz', 'fluid ounce',
 simple_volume = ['cup', 'tbsp', 'tsp', 'fluid ounce']
 categories = ['cal_eaten', 'carbs', 'fat', 'protein', 'sodium', 'sugar']
 
+SIGNUP_FORMS = [('signup', SignUpForm),
+                ('profile', UserProfileForm)]
+				
+TEMPLATES = {'signup': 'templates/formtools/wizard/wizard_form.html',
+             'profile': 'templates/formtools/wizard/wizard_form.html'}
 
+
+
+class SignUpWizard(CookieWizardView):
+	#def get_template_names(self):
+	#	return [TEMPLATES[self.steps.current]]
+	
+	def done(self, form_list, **kwargs):
+		form_data = [form.cleaned_data for form in form_list]
+		for form in form_list:
+			if isinstance(form, SignUpForm):
+				user = form.save(self.request)
+				username = form_data[0]['username']
+				raw_password = form_data[0]['password1']
+				user = authenticate(username=username, password=raw_password)
+				login(self.request, user)
+			elif isinstance(form, UserProfileForm):
+				profile = form.save(commit=False)
+				profile.country = 'None Specified'
+				profile.user = self.request.user
+				profile.net_calories = calculate_net_calories(profile)
+				get_nutrient_goals(profile)
+				profile.save()
+		context = {'profile': profile, 'change_per_week': abs(change_per_week),
+		      'five_week_proj': abs(five_week_projection), 'gain_or_lose': gain_or_lose,
+			'gain_or_loss': gain_or_loss, 'five_weeks': five_weeks}
+		return render_to_response('polls/initial_goals.html', context)
+		
 def index(request):
 	return render(request, 'polls/home.html')
 	
-def signup(request):
-	if request.method == 'POST':
-		form = SignUpForm(request.POST)
-		if form.is_valid():
-			form.save()
-			username = form.cleaned_data.get('username')
-			raw_password = form.cleaned_data.get('password1')
-			user = authenticate(username=username, password=raw_password)
-			login(request, user)
-			return HttpResponseRedirect(reverse('polls:user_profile'))
-	else:
-		form = SignUpForm()
-	return render(request, 'polls/signup.html', {'form': form})
+#def signup(request):
+#	if request.method == 'POST':
+#		user_form = SignUpForm(request.POST)
+#		profile_form = UserProfileForm(request.POST)
+#		if user_form.is_valid() and profile_form.is_valid():
+#			user_form.save()
+#			username = user_form.cleaned_data.get('username')
+#			raw_password = user_form.cleaned_data.get('password1')
+#			user = authenticate(username=username, password=raw_password)
+#			login(request, user)
+#			profile = profile_form.save(commit=False)
+#			profile.country = 'None Specified'
+#			profile.user = request.user
+#			profile.net_calories = calculate_net_calories(profile)
+#			get_nutrient_goals(profile)
+#			profile = profile_form.save()
+#			context = {'profile': profile, 'change_per_week': abs(change_per_week),
+#		      'five_week_proj': abs(five_week_projection), 'gain_or_lose': gain_or_lose,
+#			'gain_or_loss': gain_or_loss, 'five_weeks': five_weeks}
+#			return render_to_response('polls/initial_goals.html', context)
+#	else:
+#		user_form = SignUpForm()
+#		profile_form = UserProfileForm()
+#	return render(request, 'polls/signup.html', {'user_form': user_form,
+#                                             'profile_form': profile_form,})
 		
 #profile and initial goals set up section
 
@@ -83,23 +128,10 @@ def initial_goals(request, profile):
 
 @login_required(login_url='/polls/login/?next=/polls/')
 def user_profile(request):
-	if request.method == 'POST':
-		form = UserProfileForm(request.POST)
-		if form.is_valid():
-			profile = form.save(commit=False)
-			profile.country = 'None Specified'
-			profile.user = request.user
-			profile.net_calories = calculate_net_calories(profile)
-			get_nutrient_goals(profile)
-			profile = form.save()
-			context = {'profile': profile, 'change_per_week': abs(change_per_week),
-			'five_week_proj': abs(five_week_projection), 'gain_or_lose': gain_or_lose,
+	context = {'profile': profile, 'change_per_week': abs(change_per_week),
+		      'five_week_proj': abs(five_week_projection), 'gain_or_lose': gain_or_lose,
 			'gain_or_loss': gain_or_loss, 'five_weeks': five_weeks}
-			return render_to_response('polls/initial_goals.html', context)
-	else:
-		form = UserProfileForm()
-	
-	return render(request, 'polls/user_profile.html', {'form': form})
+	return render_to_response('polls/initial_goals.html', context)
 
 
 #Requests Dealing with Food Diary: Retrieve, Add Food, Search Food, Delete Entries from diary,
